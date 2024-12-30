@@ -19,13 +19,19 @@ export default function Sidebar({ isDrawerOpen, toggleDrawer }) {
           <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
             {/* Sidebar content here */}
             <li>
-              <Link to="/">Home</Link>
+              <Link to="/" onClick={toggleDrawer}>
+                Home
+              </Link>
             </li>
             <li>
-              <Link to="/tag-configuration">Tag Configuration</Link>
+              <Link to="/tag-configuration" onClick={toggleDrawer}>
+                Tag Configuration
+              </Link>
             </li>
             <li>
-              <Link to="/hd">HD</Link>
+              <Link to="/hd" onClick={toggleDrawer}>
+                HD
+              </Link>
             </li>
           </ul>
         )}

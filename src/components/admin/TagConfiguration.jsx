@@ -5,16 +5,16 @@ import InlineLoader from '../skeletons/InlineLoader.jsx';
 import EmailInput from '../EmailInput.jsx';
 
 export default function TagConfiguration() {
-  const { tags, getTags, isTagsLoading, updateTag } = useTagStore();
+  const { tags, tagsConfig, getTags, isTagsLoading, updateTag, getTagConfig } = useTagStore();
   const [editingTagId, setEditingTagId] = useState(null); // Track the currently edited tag
   const [editableFields, setEditableFields] = useState({}); // Temporary state for editing fields
 
   useEffect(() => {
-    getTags(); // Fetch tags when the component mounts
-  }, [getTags]);
+    getTagConfig(); // Fetch tags when the component mounts
+  }, [getTagConfig]);
 
   const handleEditClick = (tag) => {
-    setEditingTagId(tag._id); // Set the tag ID being edited
+    setEditingTagId(tag.id); // Set the tag ID being edited
     setEditableFields({ ...tag }); // Populate editable fields with the current tag data
   };
 
@@ -25,9 +25,24 @@ export default function TagConfiguration() {
 
   const handleSaveClick = async () => {
     try {
-      await updateTag(editingTagId, editableFields); // Update the tag
-      setEditingTagId(null); // Exit editing mode
-      setEditableFields({}); // Clear editable fields
+      // Find the changes by comparing editableFields with the original tag values
+      const updatedColumns = {};
+
+      // Iterate through editableFields and check if the value has changed
+      for (const key in editableFields) {
+        if (editableFields[key] !== tagsConfig.find((tag) => tag.id === editingTagId)[key]) {
+          updatedColumns[key] = editableFields[key];
+        }
+      }
+
+      // Only send the updated fields to the API
+      if (Object.keys(updatedColumns).length > 0) {
+        await updateTag(editingTagId, updatedColumns); // Update only changed fields
+        setEditingTagId(null); // Exit editing mode
+        setEditableFields({}); // Clear editable fields
+      } else {
+        console.log('No changes detected.');
+      }
     } catch (error) {
       console.error('Error saving tag:', error);
       // The toast notification will already be handled in the store
@@ -50,78 +65,74 @@ export default function TagConfiguration() {
           {/* head */}
           <thead>
             <tr className="bg-black text-white">
-              <th>Name</th>
-              <th>Min</th>
-              <th>Max</th>
-              <th>Ticks</th>
+              <th>Tag Name</th>
+              <th>Min Value</th>
+              <th>Max Value</th>
               <th>Alert Message</th>
               <th>Alert Recipients</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {tags.map((tag) => (
-              <tr key={tag._id}>
+            {tagsConfig.map((tag) => (
+              <tr key={tag.id}>
                 <td className="p-1">
-                  {editingTagId === tag._id ? (
+                  {editingTagId === tag.id ? (
                     <input
                       className="input input-bordered w-full"
                       type="text"
-                      name="name"
-                      value={editableFields.name || ''}
+                      name="tagname"
+                      value={editableFields.tagname || ''}
                       onChange={handleInputChange}
                     />
                   ) : (
-                    tag.name
+                    tag.tagname
                   )}
                 </td>
                 <td className="p-1">
                   <input
                     className="input input-bordered w-16"
                     type="number"
-                    name="min"
+                    name="min_value"
                     step={0.1}
-                    value={editingTagId === tag._id ? editableFields.min : tag.min}
+                    value={editingTagId === tag.id ? editableFields.min_value : tag.min_value}
                     onChange={handleInputChange}
-                    disabled={editingTagId !== tag._id}
+                    disabled={editingTagId !== tag.id}
                   />
                 </td>
                 <td className="p-1">
                   <input
                     className="input input-bordered w-16"
                     type="number"
-                    name="max"
-                    value={editingTagId === tag._id ? editableFields.max : tag.max}
+                    name="max_value"
+                    value={editingTagId === tag.id ? editableFields.max_value : tag.max_value}
                     onChange={handleInputChange}
-                    disabled={editingTagId !== tag._id}
-                  />
-                </td>
-                <td className="p-1">
-                  <input
-                    className="input input-bordered w-20"
-                    type="number"
-                    name="ticks"
-                    value={editingTagId === tag._id ? editableFields.ticks : tag.ticks}
-                    onChange={handleInputChange}
-                    disabled={editingTagId !== tag._id}
+                    disabled={editingTagId !== tag.id}
                   />
                 </td>
                 <td className="p-1">
                   <textarea
                     className="input input-bordered w-full max-w-xs"
-                    name="alertMessage"
-                    value={editingTagId === tag._id ? editableFields.alertMessage : tag.alertMessage}
+                    name="alert_msg"
+                    value={editingTagId === tag.id ? editableFields.alert_msg : tag.alert_msg}
                     onChange={handleInputChange}
-                    disabled={editingTagId !== tag._id}
+                    disabled={editingTagId !== tag.id}
                   ></textarea>
                 </td>
                 <td className="p-1">
-                  <EmailInput
-                    defaultEmails={editingTagId === tag._id ? editableFields.alertRecipients : tag.alertRecipients}
-                  />
+                  {/* <EmailInput
+                    defaultEmails={editingTagId === tag.id ? editableFields.mail_recipient : tag.mail_recipient}
+                  /> */}
+                  <textarea
+                    className="input input-bordered w-full max-w-xs"
+                    name="alert_msg"
+                    value={editingTagId === tag.id ? editableFields.alert_msg : tag.alert_msg}
+                    onChange={handleInputChange}
+                    disabled={editingTagId !== tag.id}
+                  ></textarea>
                 </td>
                 <td className="p-1">
-                  {editingTagId === tag._id ? (
+                  {editingTagId === tag.id ? (
                     <div className="flex gap-2">
                       <button className="btn btn-success" onClick={handleSaveClick}>
                         Save

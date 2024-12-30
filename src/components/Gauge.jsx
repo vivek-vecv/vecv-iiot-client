@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import GaugeComponent from 'react-gauge-component';
 
-export default function Gauge({ heading, min, max, totalTicks, type, alertMessage }) {
-  const [value, setValue] = useState(min);
+export default function Gauge({ heading, min, max, value, totalTicks, type, alertMessage }) {
   // // Send an alert
   // const sendAlert = () => {
   //   alert(`${value} is beyond the range`);

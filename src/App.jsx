@@ -14,7 +14,6 @@ function App() {
   const { user, getLoggedInUser, isCheckingAuth } = useAuthStore();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { tags, getTags, isTagsLoading } = useTagStore();
 
   useEffect(() => {
     getLoggedInUser();
@@ -24,13 +23,9 @@ function App() {
     setIsDrawerOpen(!isDrawerOpen);
   };
 
-  useEffect(() => {
-    getTags();
-  }, [getTags]);
-
-  if (isCheckingAuth && !user) {
-    return <FullPageLoader />;
-  }
+  // if (isCheckingAuth && !user) {
+  //   return <FullPageLoader />;
+  // }
 
   return (
     <>

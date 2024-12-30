@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logo from '/logo.png';
+import logo from '/logo.jpg';
 import useAuthStore from '../store/useAuthStore.js';
 import { BsGear, BsPerson } from 'react-icons/bs';
 import { IoLogOutOutline } from 'react-icons/io5';
@@ -22,9 +22,8 @@ export default function Navbar({ toggleDrawer }) {
         </button>
       </div>
       <div className="flex-1">
-        <Link to="/" className="btn btn-ghost text-xl">
+        <Link to="/" className="text-xl">
           <img src={logo} alt="" className="h-8" />
-          Eicher
         </Link>
       </div>
       {!user && (

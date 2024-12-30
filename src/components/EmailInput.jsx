@@ -7,6 +7,7 @@ function EmailInput({ defaultEmails }) {
   useEffect(() => {
     setTags(defaultEmails);
   }, [defaultEmails]);
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
