@@ -8,6 +8,10 @@
   font-weight: 700;
 }
 
+[data-gauge] svg:hover {
+  overflow: visible;
+}
+
 .section::-webkit-scrollbar-thumb {
   border-radius: 100px !important;
   background: #8070d4 !important;

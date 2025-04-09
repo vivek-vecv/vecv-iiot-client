@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore.js';
 import FullPageLoader from './skeletons/FullPageLoader.jsx';
 
@@ -9,7 +9,15 @@ const PublicRoute = () => {
     return <FullPageLoader />;
   }
 
-  return user ? <Navigate to="/" replace /> : <Outlet />;
+  const intendedRoute = localStorage.getItem('intendedRoute') || '/';
+  console.log(`PublicRoute navigating to: ${intendedRoute}`);
+
+  if (user) {
+    localStorage.removeItem('intendedRoute');
+    return <Navigate to={intendedRoute} replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default PublicRoute;

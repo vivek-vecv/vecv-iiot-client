@@ -15,6 +15,8 @@ function App() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  console.log('------------------user-------------------\n', user);
+
   useEffect(() => {
     getLoggedInUser();
   }, [getLoggedInUser]);
@@ -23,9 +25,9 @@ function App() {
     setIsDrawerOpen(!isDrawerOpen);
   };
 
-  // if (isCheckingAuth && !user) {
-  //   return <FullPageLoader />;
-  // }
+  if (isCheckingAuth && !user) {
+    return <FullPageLoader />;
+  }
 
   return (
     <>

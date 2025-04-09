@@ -12,8 +12,6 @@ const initialState = {
 
 const useAuthStore = create((set, get) => ({
   ...initialState,
-  redirectPath: '/',
-  setRedirectPath: (path) => set({ redirectPath: path }),
   register: async (signupData) => {
     try {
       set({ isRegistering: true });
@@ -29,25 +27,14 @@ const useAuthStore = create((set, get) => ({
   login: async (loginData) => {
     set({ isLoggingIn: true });
     try {
-      // const res = await axiosInstance.post('/auth/login', loginData);
-      set({
-        user: {
-          firstName: 'admin',
-          lastName: 'admin',
-          email: 'admin@gmail.com',
-          phone: 12345678,
-          password: '12345678',
-          profilePicture: '',
-          isVerified: true,
-          role: 'admin',
-          isActive: true,
-        },
-      });
-      // set({ user: res.data });
+      const res = await axiosInstance.post('/auth/login', loginData);
+      set({ user: res.data });
       toast.success('Logged in successfully');
-      // if (res.status == 200) {
-      //   return true;
-      // } else return false;
+      if (res.status == 200) {
+        localStorage.setItem('token', res.data.token);
+        // Retrieve the intended route from localStorage
+        return true;
+      } else return false;
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
@@ -56,21 +43,8 @@ const useAuthStore = create((set, get) => ({
   },
   getLoggedInUser: async () => {
     try {
-      // const res = await axiosInstance.get('/auth/me');
-      // set({ user: res.data });
-      set({
-        user: {
-          firstName: 'admin',
-          lastName: 'admin',
-          email: 'admin@gmail.com',
-          phone: 12345678,
-          password: '12345678',
-          profilePicture: '',
-          isVerified: true,
-          role: 'admin',
-          isActive: true,
-        },
-      });
+      const res = await axiosInstance.get('/auth/me');
+      set({ user: res.data });
     } catch (error) {
       console.log('Error in checkAuth', error);
       set({ user: null });
@@ -82,6 +56,8 @@ const useAuthStore = create((set, get) => ({
     try {
       await axiosInstance.post('/auth/logout');
       set({ user: null });
+      // Clear token from localStorage
+      localStorage.removeItem('token');
       toast.success('Logged out successfully');
     } catch (error) {
       toast.error(error.response.data.message);

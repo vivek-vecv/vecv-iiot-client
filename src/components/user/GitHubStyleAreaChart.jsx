@@ -16,13 +16,19 @@ const GitHubStyleAreaChart = () => {
   // Set default date range to last 24 hours
   useEffect(() => {
     const now = new Date();
-    const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
+    const last24Hours = new Date(now.getTime() - 12 * 60 * 60 * 1000); // 24 hours ago
 
     setStartDate(last24Hours); // Set start date to 24 hours ago
     setEndDate(now); // Set end date to current time
 
     // Fetch data for the last 24 hours
     getHistoricData(last24Hours.toISOString(), now.toISOString());
+
+    const timer = setTimeout(() => {
+      handleSeriesChange(seriesOptions); // Calls it automatically after 8 seconds
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, [getHistoricData]);
 
   // Call getHistoricData when both dates are selected
@@ -33,13 +39,12 @@ const GitHubStyleAreaChart = () => {
       getHistoricData(fromDate, toDate);
     }
   };
-
   const seriesOptions = [
-    { value: 'Input Pressure', label: 'Input Pressure' },
-    { value: 'Output Pressure', label: 'Output Pressure' },
-    { value: 'Pump Vibration', label: 'Pump Vibration' },
-    { value: 'Motor Temperature', label: 'Motor Temperature' },
-    { value: 'Pump Temperature', label: 'Pump Temperature' },
+    { value: 'input Pressure', label: 'input Pressure' },
+    { value: 'output Pressure', label: 'output Pressure' },
+    { value: 'pump Vibration', label: 'pump Vibration' },
+    { value: 'motor temperature', label: 'Motor Temperature' },
+    { value: 'pump temperature', label: 'pump temperature' },
   ];
 
   const handleSeriesChange = (selected) => {
@@ -47,13 +52,23 @@ const GitHubStyleAreaChart = () => {
   };
 
   // Format the data for the chart
+  // const chartSeriesData = selectedSeries.map((seriesName) => {
+  //   console.log(seriesName);
+  //   return {
+  //     name: seriesName,
+  //     data: historicData.map((data) => data[seriesName]),
+  //   };
+  // });
+
   const chartSeriesData = selectedSeries.map((seriesName) => {
     return {
       name: seriesName,
-      data: historicData.map((data) => data[seriesName]),
+      data: historicData.map((data) => ({
+        x: data.timestamp, // Use timestamp for x-axis
+        y: parseFloat(data[seriesName]), // Parse the values to floats
+      })),
     };
   });
-
   const chartOptions = {
     chart: {
       type: 'area',
@@ -73,30 +88,32 @@ const GitHubStyleAreaChart = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div className="mb-4">
-        <label>
+    <div className="p-5">
+      <div className="mb-4 flex flex-wrap justify-between">
+        <label className="flex gap-2 items-center">
           Start Date:
           <DatePicker
             selected={startDate}
             onChange={(date) => setStartDate(date)}
             showTimeSelect
+            className="input py-1 px-3 border border-primary"
             dateFormat="dd-MMM-yyyy hh:mm aa"
             isClearable
           />
         </label>
-        <label>
+        <label className="flex gap-2 items-center">
           End Date:
           <DatePicker
             selected={endDate}
             onChange={(date) => setEndDate(date)}
             showTimeSelect
+            className="input py-1 px-3 border border-primary"
             dateFormat="dd-MMM-yyyy hh:mm aa"
             isClearable
           />
         </label>
 
-        <button onClick={handleFetchData} disabled={isHistoricDataLoading}>
+        <button onClick={handleFetchData} disabled={isHistoricDataLoading} className="btn btn-primary">
           {isHistoricDataLoading ? 'Loading...' : 'Fetch Data'}
         </button>
       </div>
@@ -109,6 +126,7 @@ const GitHubStyleAreaChart = () => {
           className="basic-multi-select"
           classNamePrefix="select"
           onChange={handleSeriesChange}
+          value={seriesOptions}
         />
       </div>
 

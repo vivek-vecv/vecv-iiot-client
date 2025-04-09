@@ -9,6 +9,11 @@ import useAuthStore from '../store/useAuthStore.js';
 import ProtectedRoute from '../components/ProtectedRoute.jsx';
 import PublicRoute from '../components/PublicRoute.jsx';
 import AlertDetailsPage from '../pages/AlertDetailsPage.jsx';
+import Dashboard from '../pages/Dashboard.jsx';
+import MachinesListPage from '../pages/MachinesListPage.jsx';
+import MachinePage from '../pages/MachinePage.jsx';
+import BarChartComponent from '../pages/BarChartComponent.jsx';
+import CBMDashboard from '../pages/CBMDashboard.jsx';
 
 export default function Body() {
   const { user } = useAuthStore();
@@ -22,13 +27,22 @@ export default function Body() {
         </Route>
 
         {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/" index element={<HomePage />} />
-          <Route path="/tag-configuration" element={<TagConfigurationPage />} />
-          <Route path="/hd" element={<HDPage />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/alerts/:line/:severity/:value/:duration" element={<AlertDetailsPage />} />
-        </Route>
+        {/* <Route element={<ProtectedRoute />}> */}
+        <Route path="/" index element={<HomePage />} />
+        <Route path="/tag-configuration" element={<TagConfigurationPage />} />
+        <Route path="/hd" element={<HDPage />} />
+        <Route path="/machine-shop-1" element={<MachinesListPage />} />
+        <Route path="/machine-shop-1/:machine" element={<MachinePage />} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/cbmdashboard" element={<CBMDashboard />} />
+        <Route path="/engine" element={<CBMDashboard />} />
+        {/* <Route path="/dashboard" element={<BarChartComponent />} /> */}
+        <Route path="/alerts/:line/:severity/:value/:duration" element={<AlertDetailsPage />} />
+        {/* </Route> */}
+
+        {/* Catch-all for unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );

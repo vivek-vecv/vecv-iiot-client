@@ -33,24 +33,27 @@ export default function AlertDetailsPage() {
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const response = await axiosInstance.get('/alerts', {
+        const response = await axiosInstance.get('/alerts/', {
           params: { line, severity, value, duration },
         });
+
         setAlerts(response.data);
 
         // Prepare data for the chart
         const categories = response.data.map((alert) => {
           const date = new Date(alert.createdAt);
-          const formattedDate = date.toLocaleDateString('en-GB', {
+          const formattedDate = date.toLocaleDateString('en-IN', {
             day: '2-digit',
             month: 'short',
             year: 'numeric',
+            timeZone: 'UTC',
           });
-          const formattedTime = date.toLocaleTimeString('en-US', {
+          const formattedTime = date.toLocaleTimeString('en-IN', {
             hour: 'numeric',
             minute: 'numeric',
             second: 'numeric',
             hour12: true,
+            timeZone: 'UTC',
           });
           return `${formattedDate}\n${formattedTime}`;
         });
@@ -72,7 +75,7 @@ export default function AlertDetailsPage() {
 
     fetchAlerts();
   }, [line, severity, value, duration]);
-
+  console.log(alerts);
   return (
     <div className="p-4 lg:px-12 lg:py-6">
       <h1 className="text-2xl font-bold mb-4">Alert Details</h1>
@@ -83,6 +86,7 @@ export default function AlertDetailsPage() {
             <th className="border border-gray-300 px-4 py-2">Line</th>
             <th className="border border-gray-300 px-4 py-2">Severity</th>
             <th className="border border-gray-300 px-4 py-2">Value</th>
+            <th className="border border-gray-300 px-4 py-2">Tag Name</th>
             <th className="border border-gray-300 px-4 py-2">Date</th>
             <th className="border border-gray-300 px-4 py-2">Time</th>
           </tr>
@@ -91,16 +95,18 @@ export default function AlertDetailsPage() {
           {alerts.length > 0 ? (
             alerts.map((alert) => {
               const date = new Date(alert.createdAt);
-              const formattedDate = date.toLocaleDateString('en-GB', {
+              const formattedDate = date.toLocaleDateString('en-IN', {
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric',
+                timeZone: 'UTC',
               });
-              const formattedTime = date.toLocaleTimeString('en-US', {
+              const formattedTime = date.toLocaleTimeString('en-IN', {
                 hour: 'numeric',
                 minute: 'numeric',
                 second: 'numeric',
                 hour12: true,
+                timeZone: 'UTC',
               });
 
               return (
@@ -108,6 +114,7 @@ export default function AlertDetailsPage() {
                   <td className="border border-gray-300 px-4 py-2">{alert.line}</td>
                   <td className="border border-gray-300 px-4 py-2">{alert.severity}</td>
                   <td className="border border-gray-300 px-4 py-2">{alert.value}</td>
+                  <td className="border border-gray-300 px-4 py-2"> {alert.tagName.replace(/_/g, ' ')}</td>
                   <td className="border border-gray-300 px-4 py-2">{formattedDate}</td>
                   <td className="border border-gray-300 px-4 py-2">{formattedTime}</td>
                 </tr>

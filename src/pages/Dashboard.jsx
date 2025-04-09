@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAlertStore } from '../store/useAlertStore.js';
 import { Link } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
+import { spread } from 'axios';
 
 const prepareChartData = (alertCounts) => {
   const lines = Object.keys(alertCounts);
@@ -18,8 +19,16 @@ const prepareChartData = (alertCounts) => {
     options: {
       chart: {
         type: 'bar',
-        stacked: true,
+        // stacked: true,
         background: '#ffffff',
+      },
+      plotOptions: {
+        bar: {
+          columnWidth: '50%', // Reduce bar width
+          barHeight: '80%', // Adjust bar height if needed (for horizontal bars)
+          distributed: false,
+          // Ensure bars are grouped by category
+        },
       },
       colors: [
         '#E63946', // Critical: Rich red
@@ -48,7 +57,14 @@ const prepareChartData = (alertCounts) => {
 };
 
 export default function Dashboard() {
-  const { fetchAlerts, fetchAlertCounts } = useAlertStore();
+  const {
+    fetchAlerts,
+    fetchAlertCounts,
+    alertCounts,
+    fetchLastFiveAlerts,
+    fetchLastFivewarnings,
+    lastFiveALertsWarning,
+  } = useAlertStore();
   const [alertCounts24Hours, setAlertCounts24Hours] = useState({});
   const [alertCounts1Week, setAlertCounts1Week] = useState({});
 
@@ -60,6 +76,11 @@ export default function Dashboard() {
       // Fetch counts for last 24 hours and last 7 days
       const counts24h = await fetchAlertCounts('24h');
       const counts7d = await fetchAlertCounts('7d');
+      const lastFivealerts = await fetchLastFiveAlerts();
+      // const lastFivealertswarning = await fetchLastFivewarnings();
+
+      console.log('lastFivealerts---', lastFivealerts);
+      console.log('lastFiveALertsWarning----', lastFiveALertsWarning);
 
       // Set the state with the fetched counts
       setAlertCounts24Hours(counts24h);
@@ -67,6 +88,9 @@ export default function Dashboard() {
     };
     loadData();
   }, [fetchAlerts, fetchAlertCounts]);
+  console.log('---------------Running------------------', alertCounts24Hours, alertCounts1Week);
+  console.log('---------------alertCounts------------------', alertCounts);
+  console.log(alertCounts);
 
   const renderTable = (alertCounts, duration) => {
     const header = ['Line', 'Total', 'Critical', 'Medium', 'Low'];

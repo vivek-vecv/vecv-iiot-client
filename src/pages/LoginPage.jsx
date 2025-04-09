@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useAuthStore from '../store/useAuthStore.js';
 import { toast } from 'react-toastify';
 import { BsChatHeart, BsEyeFill, BsEyeSlashFill, BsKey } from 'react-icons/bs';
@@ -8,25 +8,40 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const { isLoggingIn, login, user } = useAuthStore();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
-  const location = useLocation();
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (user) {
+      // Check for intended route
+      console.log('-----------------chalja-------------------\n');
+      const intendedRoute = localStorage.getItem('intendedRoute');
+      console.log('------------------intendedRoute-------------------\n', intendedRoute);
 
-  const from = location.state?.from?.pathname || '/';
+      if (intendedRoute) {
+        localStorage.removeItem('intendedRoute'); // Clear the intended route from localStorage
+        navigate(intendedRoute); // Redirect to the intended route
+      } else {
+        navigate('/'); // Redirect to the home page if no intended route
+      }
+    }
+  }, [user, navigate]);
 
-  const { isLoggingIn, login } = useAuthStore();
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const success = await login(formData);
 
-    const success = login(formData);
     if (success) {
-      const { redirectPath } = useAuthStore.getState();
-      navigate(redirectPath, { replace: true });
+      const intendedRoute = localStorage.getItem('intendedRoute') || '/';
+      console.log(`Login successful. Navigating to: ${intendedRoute}`);
+      localStorage.removeItem('intendedRoute');
+      navigate(intendedRoute);
+    } else {
+      toast.error('Login failed. Please try again.');
     }
   };
 

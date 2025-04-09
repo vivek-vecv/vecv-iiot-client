@@ -24,6 +24,7 @@ export default function UserProfile() {
   if (isCheckingAuth) {
     return <FullPageLoader />;
   }
+  console.log('------------------user-------------------\n', user);
 
   return (
     <div className="container mx-auto my-4 px-10">

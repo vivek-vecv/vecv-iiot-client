@@ -6,58 +6,79 @@ const initialState = {
   alerts: [],
   alertCounts: {},
   filteredAlerts: [],
+  lastFiveALerts: [],
+  lastFiveALertsWarning: [],
   loading: false,
   error: null,
 };
 
 export const useAlertStore = create((set) => ({
   ...initialState,
+
   fetchAlerts: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axiosInstance.get('/alerts');
+      const response = await axiosInstance.get('/alerts/all');
       set({ alerts: response.data, loading: false });
     } catch (error) {
       set({ error: error.response?.data?.message || 'Failed to fetch alerts', loading: false });
       toast.error(error.response?.data?.message || 'Failed to fetch alerts');
-    } finally {
-      set({ loading: false });
     }
   },
 
-  // Fetch alert counts from the API
+  fetchLastFiveAlerts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axiosInstance.get('/alerts/lastalerts');
+      set({ lastFiveALerts: response.data, loading: false });
+    } catch (error) {
+      set({ error: error.response?.data?.message || 'Failed to fetch alerts', loading: false });
+      toast.error(error.response?.data?.message || 'Failed to fetch alerts');
+    }
+  },
+
+  fetchLastFivewarnings: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axiosInstance.get('/alerts/alertWarnings');
+      set({ lastFiveALertsWarning: response.data, loading: false });
+    } catch (error) {
+      set({ error: error.response?.data?.message || 'Failed to fetch alerts', loading: false });
+      toast.error(error.response?.data?.message || 'Failed to fetch alerts');
+    }
+  },
+
   fetchAlertCounts: async (duration) => {
     set({ loading: true, error: null });
     try {
-      const res = await axiosInstance.get(`/alerts/counts?duration=${duration}`);
-      if (res.status === 200) {
-        set({ alertCounts: res.data });
+      const response = await axiosInstance.get(`/alerts/counts?duration=${duration}`);
+      set({ alertCounts: response.data.HD, loading: false });
+      if (response.status === 200) {
+        return response.data;
       }
-      return res.data;
     } catch (error) {
-      set({ loading: false, error: error.message });
+      set({ error: error.response?.data?.message || 'Failed to fetch alert counts', loading: false });
+      toast.error(error.response?.data?.message || 'Failed to fetch alert counts');
     }
   },
 
-  // Fetch alerts with filters
   fetchFilteredAlerts: async (filters) => {
     set({ loading: true, error: null });
     try {
-      const response = await axiosInstance.get('/alerts/fetch', { params: filters });
-      set({ alerts: response.data, loading: false });
+      const response = await axiosInstance.get('/alerts/filter', { params: filters });
+      set({ filteredAlerts: response.data, loading: false });
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to fetch alerts', loading: false });
-      toast.error(error.response?.data?.message || 'Failed to fetch alerts');
+      set({ error: error.response?.data?.message || 'Failed to fetch filtered alerts', loading: false });
+      toast.error(error.response?.data?.message || 'Failed to fetch filtered alerts');
     }
   },
 
-  // Create a new alert
   createAlert: async (newAlert) => {
     set({ loading: true, error: null });
     try {
       const response = await axiosInstance.post('/alerts', newAlert);
       set((state) => ({
-        alerts: [...state.alerts, response.data.alert],
+        alerts: [...state.alerts, response.data],
         loading: false,
       }));
       toast.success('Alert created successfully!');
@@ -67,13 +88,12 @@ export const useAlertStore = create((set) => ({
     }
   },
 
-  // Update an alert
   updateAlert: async (id, updatedData) => {
     set({ loading: true, error: null });
     try {
       const response = await axiosInstance.put(`/alerts/${id}`, updatedData);
       set((state) => ({
-        alerts: state.alerts.map((alert) => (alert._id === id ? { ...alert, ...response.data.alert } : alert)),
+        alerts: state.alerts.map((alert) => (alert.id === id ? { ...alert, ...response.data } : alert)),
         loading: false,
       }));
       toast.success('Alert updated successfully!');
@@ -83,13 +103,12 @@ export const useAlertStore = create((set) => ({
     }
   },
 
-  // Delete an alert
   deleteAlert: async (id) => {
     set({ loading: true, error: null });
     try {
       await axiosInstance.delete(`/alerts/${id}`);
       set((state) => ({
-        alerts: state.alerts.filter((alert) => alert._id !== id),
+        alerts: state.alerts.filter((alert) => alert.id !== id),
         loading: false,
       }));
       toast.success('Alert deleted successfully!');
@@ -97,10 +116,5 @@ export const useAlertStore = create((set) => ({
       set({ error: error.response?.data?.message || 'Failed to delete alert', loading: false });
       toast.error(error.response?.data?.message || 'Failed to delete alert');
     }
-  },
-
-  // Reset alert counts data
-  resetAlertCounts: () => {
-    set({ alertCounts: {} });
   },
 }));

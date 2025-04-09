@@ -1,4 +1,3 @@
-import React from 'react';
 import TagConfiguration from '../components/admin/TagConfiguration.jsx';
 
 export default function TagConfigurationPage() {

@@ -4,20 +4,21 @@ import { toast } from 'react-toastify';
 
 const initialState = {
   tags: [],
-  historicData: [], // New state to store historic data
+  historicData: [], // State to store historic data
   isTagsLoading: false,
   isHistoricDataLoading: false,
-  tagsConfig: [], // Loading state for historic data
+  tagsConfig: [], // State for tag configurations
 };
 
 export const useTagStore = create((set, get) => ({
   ...initialState,
+
+  // Fetch the latest sensor data (live data)
   getTags: async () => {
     set({ isTagsLoading: true });
     try {
-      const response = await axiosInstance.get('/latest-sensor-data');
+      const response = await axiosInstance.get('/tags/latest-sensor-data');
       set({ tags: response.data, isTagsLoading: false });
-      console.log('------------------response---tags----------------\n', response.data);
     } catch (error) {
       console.error('Error fetching tags:', error);
       toast.error('Failed to fetch tags. Please try again.');
@@ -25,16 +26,16 @@ export const useTagStore = create((set, get) => ({
       set({ isTagsLoading: false });
     }
   },
-  // New function to fetch historic data based on date range
+
+  // Fetch historic data based on date range
   getHistoricData: async (fromDate, toDate) => {
     set({ isHistoricDataLoading: true });
     try {
-      const response = await axiosInstance.post('/tags-historic-data', {
-        fromDate: fromDate, // Use the date format from the DatePicker
-        toDate: toDate,
+      const response = await axiosInstance.post('/tags/tags-historic-data', {
+        fromDate,
+        toDate,
       });
       set({ historicData: response.data, isHistoricDataLoading: false });
-      console.log('------------------historic data response-------------------\n', response);
     } catch (error) {
       console.error('Error fetching historic data:', error);
       toast.error('Failed to fetch historic data. Please try again.');
@@ -43,38 +44,69 @@ export const useTagStore = create((set, get) => ({
     }
   },
 
+  // Fetch tag configurations
   getTagConfig: async () => {
     set({ isTagsLoading: true });
     try {
-      const response = await axiosInstance.get('/tag-configurations'); // Fetch data from the tag-configurations API
+      const response = await axiosInstance.get('/tags/tag-configurations');
       set({ tagsConfig: response.data, isTagsLoading: false });
       console.log('Tags fetched successfully:', response.data);
     } catch (error) {
       console.error('Error fetching tags:', error);
-      toast.error('Failed to fetch tags. Please try again.');
+      toast.error('Failed to fetch tag configurations. Please try again.');
     } finally {
       set({ isTagsLoading: false });
     }
   },
 
-  updateTag: async (tagname, column, value) => {
+  // Update tag details (including new fields like severity, line, etc.)
+  updateTag: async (id, updates) => {
     try {
-      // Assuming 'column' is the name of the column (e.g., 'min_value')
-      const response = await axiosInstance.put('/update-tag', {
-        id: tagname,
-        column: column, // Send column name, e.g., 'min_value'
-        value: value, // Send the value to update
+      const response = await axiosInstance.put('/tags/update-tag', {
+        id,
+        column: { ...updates }, // Pass all updates as a single object
       });
 
       console.log('Update successful:', response.data.message);
-      await get().getTagConfig();
-      await get().getTags();
-      return response.data; // Optionally return data for further processing
+      await get().getTagConfig(); // Refresh tag configurations
+      await get().getTags(); // Refresh live sensor data
+      return response.data; // Return response data for further processing if needed
     } catch (error) {
       console.error('Error updating tag:', error.response?.data || error.message);
-      throw error; // Optionally rethrow the error for handling in the calling code
+      toast.error('Failed to update tag. Please try again.');
+      throw error; // Optionally rethrow the error for external handling
     }
   },
 
+  // Create a new tag
+  createTag: async (tagData) => {
+    try {
+      const response = await axiosInstance.post('/tags/create-tag', tagData);
+      console.log('Tag created successfully:', response.data);
+      await get().getTagConfig(); // Refresh configurations after creating a new tag
+      return response.data;
+    } catch (error) {
+      console.error('Error creating tag:', error.response?.data || error.message);
+      toast.error('Failed to create tag. Please try again.');
+      throw error;
+    }
+  },
+
+  deleteTag: async (id) => {
+    try {
+      const response = await axiosInstance.delete(`/tags/delete-tag/${id}`);
+      console.log('Tag deleted successfully:', response.data.message);
+      toast.success('Tag deleted successfully.');
+      await get().getTagConfig();
+      await get().getTags();
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting tag:', error.response?.data || error.message);
+      toast.error('Failed to delete tag. Please try again.');
+      throw error;
+    }
+  },
+
+  // Reset store state to initial values
   reset: () => set(initialState),
 }));
