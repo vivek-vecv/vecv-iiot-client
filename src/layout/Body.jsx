@@ -32,7 +32,7 @@ export default function Body() {
         <Route path="/tag-configuration" element={<TagConfigurationPage />} />
         <Route path="/hd" element={<HDPage />} />
         <Route path="/machine-shop-1" element={<MachinesListPage />} />
-        <Route path="/machine-shop-1/:machine" element={<MachinePage />} />
+        <Route path="/machine-shop-1/:machineSlug" element={<MachinePage />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/cbmdashboard" element={<CBMDashboard />} />
